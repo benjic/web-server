@@ -15,18 +15,33 @@ int main(int argc, char** argv)
 	socklen_t length;
 
 	int err;
-	int read_len;
-
-	char buffer[BUFFER_SIZE+1];
+	unsigned int port;
 
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in client_addr;
+
+	/* User specified port? */
+	if (argc > 1) {
+		
+		/* Parse integer */
+		port = atoi(argv[1]);
+
+		/* Determine valid port number was found */
+		if ( port < 1 ) {
+			printf("%s is not a valid port\n", argv[1]);
+			exit(-1);
+		}
+
+	} else {
+		/* Default bind port */
+		port = 8080;
+	}
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(8080);
+	serv_addr.sin_port = htons(port);
 
 	err = bind(listen_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
@@ -40,7 +55,7 @@ int main(int argc, char** argv)
 		perror("listen");
 	}
 
-	while (TRUE) {
+	printf("Webserver on port %d is listening for connections\n", port);
 
 		connection_fd = accept(listen_fd, (struct sockaddr*)&client_addr, &length);
 
