@@ -1,9 +1,12 @@
-CFLAGS=-g -Wall -ansi -pedantic
+CFLAGS=-g -Wall -ansi -pedantic -lrt -lpthread
 CC=gcc
 
-.PHONY: clean
+OBJECTS=thread_pool.o webserver.o
 
-webserver: webserver.c
-	$(CC) $(CFLAGS) -o webserver webserver.c
+.PHONY: clean
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+webserver: $(OBJECTS)
+	$(CC) $(CFLAGS) -o webserver $(OBJECTS)
 clean:
 	/bin/rm -f webserver *.o
