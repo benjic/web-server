@@ -1,8 +1,9 @@
 CFLAGS=-g -Wall -ansi -pedantic -lrt -lpthread
 CC=gcc
 
-OBJECTS=webserver.o
-OBJECTS+=thread_pool.o tp_job_queue.o tp_worker_collection.o
+THRD_POOL_OBJS=thread_pool.o tp_job_queue.o tp_worker_collection.o
+WEBSRV_OBJS=webserver.o worker.o
+OBJECTS=$(THRD_POOL_OBJS) $(WEBSRV_OBJS)
 
 .PHONY: clean
 %.o: %.c
