@@ -2,6 +2,20 @@
 #define THREAD_POOL_H
 #include <pthread.h>
 #include <semaphore.h>
+#include <sys/types.h>
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+typedef struct tp_job_s {
+	struct sockaddr *client_addr;
+	socklen_t *length;
+	int sockfd;
+} tp_job;
+
+tp_job* tp_job_init();
+void tp_job_destroy(tp_job*);
 
 typedef struct tp_job_queue_s { 
 	int buffer_size;
@@ -10,7 +24,7 @@ typedef struct tp_job_queue_s {
 	pthread_mutex_t *request_queue_mutex;
 	sem_t *empty;
 	sem_t *full;
-	int *buffer;
+	tp_job **buffer;
 } tp_job_queue;
 
 tp_job_queue *tp_job_queue_init(int buffer_size);
@@ -33,8 +47,8 @@ typedef struct thread_pool_s {
 void tp_destroy(thread_pool* tp);
 thread_pool* tp_init(int buffer_size);
 
-void tp_enqueue_request(thread_pool *tp, int fd);
-int tp_dequeue_request(thread_pool *tp);
+void tp_enqueue_request(thread_pool *tp, tp_job *job);
+tp_job* tp_dequeue_request(thread_pool *tp);
 
 pthread_t tp_add_worker(thread_pool *tp, void* (*)(void*));
 

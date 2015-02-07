@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
 #include "thread_pool.h"
 #define BUFFER_RATIO 5
 
@@ -27,13 +31,13 @@ void tp_destroy(thread_pool* tp)
 	free(tp);
 }
 
-void tp_enqueue_request(thread_pool *tp, int fd)
+void tp_enqueue_request(thread_pool *tp, tp_job *job)
 {
 	sem_wait(tp->jobs->empty);
 
 	pthread_mutex_lock(tp->jobs->request_queue_mutex);
 	
-	tp->jobs->buffer[tp->jobs->insert_pointer] = fd;
+	tp->jobs->buffer[tp->jobs->insert_pointer] = job;
 	tp->jobs->insert_pointer++;
 	tp->jobs->insert_pointer = tp->jobs->insert_pointer % tp->jobs->buffer_size;
 
@@ -42,22 +46,22 @@ void tp_enqueue_request(thread_pool *tp, int fd)
 		
 }
 
-int tp_dequeue_request(thread_pool *tp)
+tp_job* tp_dequeue_request(thread_pool *tp)
 {
-	int fd;
+	tp_job *job;
 
 	sem_wait(tp->jobs->full);
 
 	pthread_mutex_lock(tp->jobs->request_queue_mutex);
 	
-	fd = tp->jobs->buffer[tp->jobs->insert_pointer];
+	job = tp->jobs->buffer[tp->jobs->remove_pointer];
 	tp->jobs->remove_pointer++;
 	tp->jobs->remove_pointer = tp->jobs->remove_pointer % tp->jobs->buffer_size;
 
 	pthread_mutex_unlock(tp->jobs->request_queue_mutex);
 	sem_post(tp->jobs->empty);
 
-	return fd;
+	return job;
 		
 }
 
@@ -82,4 +86,25 @@ pthread_t tp_add_worker(thread_pool *tp, void* (*worker_function)(void*))
 	}
 
 	return tid;	
+}
+
+tp_job* tp_job_init()
+{
+	tp_job *job;
+
+	job = malloc(sizeof(tp_job));
+	job->client_addr = malloc(sizeof(struct sockaddr_in));
+	job->length	= malloc(sizeof(socklen_t));
+
+	job->sockfd = 0;
+
+	return job;
+}
+
+void tp_job_destroy(tp_job *job)
+{
+	free(job->client_addr);
+	free(job->length);
+
+	free(job);
 }

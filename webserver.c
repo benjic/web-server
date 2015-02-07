@@ -27,8 +27,7 @@ void* worker_function( void *tp )
 
 int main(int argc, char** argv)
 {
-
-	int listen_fd;
+	/* Local varialbes */
 	int i;
 
 	socklen_t length;
@@ -36,8 +35,9 @@ int main(int argc, char** argv)
 	int err;
 	unsigned int port;
 
+	/* Structs for network info */
+	int listen_fd;
 	struct sockaddr_in serv_addr;
-	struct sockaddr_in client_addr;
 
 	thread_pool *t_pool;
 
@@ -89,7 +89,15 @@ int main(int argc, char** argv)
 
 	while (TRUE) {
 
-	 	tp_enqueue_request(t_pool, accept(listen_fd, (struct sockaddr*)&client_addr, &length));
+		/* Create new job */
+		tp_job *job;
+		job = tp_job_init();
+		
+		job->sockfd = accept(listen_fd, 
+				job->client_addr,
+				job->length);
+
+		tp_enqueue_request(t_pool, job);
 		fprintf(stderr, "DEBUG: Incoming request was accepted\n");
 	 	
 	 }
