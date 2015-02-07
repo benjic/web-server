@@ -16,8 +16,18 @@ typedef struct tp_job_queue_s {
 tp_job_queue *tp_job_queue_init(int buffer_size);
 void tp_job_queue_destroy(tp_job_queue *tp_j);
 
+typedef struct tp_worker_collection_s {
+	int num_workers;
+	int max_workers;
+	pthread_t *workers;
+} tp_worker_collection;
+
+tp_worker_collection *tp_wc_init(int num_workers);
+void tp_wc_destroy(tp_worker_collection *tp_w);
+
 typedef struct thread_pool_s {
 	tp_job_queue *jobs;
+	tp_worker_collection *workers;
 } thread_pool;
 
 void tp_destroy(thread_pool* tp);
@@ -25,5 +35,7 @@ thread_pool* tp_init(int buffer_size);
 
 void tp_enqueue_request(thread_pool *tp, int fd);
 int tp_dequeue_request(thread_pool *tp);
+
+pthread_t tp_add_worker(thread_pool *tp, void* (*)(void*));
 
 #endif
