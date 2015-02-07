@@ -9,10 +9,27 @@
 #define TRUE 1
 #define NUM_WORKERS 3
 
+void* worker_function( void *tp )
+{
+	int fd;
+	thread_pool *parent_tp;
+
+	parent_tp = (thread_pool*) tp;
+
+	while (TRUE) {
+
+		fd = tp_dequeue_request(parent_tp);
+		printf("Hello from worker: there are %d items in the work queue\n!", fd);
+
+		sleep(5);
+	}
+}
+
 int main(int argc, char** argv)
 {
 
 	int listen_fd;
+	int i;
 
 	socklen_t length;
 
@@ -42,6 +59,13 @@ int main(int argc, char** argv)
 	}
 
 	t_pool = tp_init(NUM_WORKERS);
+
+	for ( i = 0; i < NUM_WORKERS; i++ ) {
+		if (tp_add_worker(t_pool, worker_function)) {
+			perror("Cannot create worker function");
+		}
+
+	}
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 
