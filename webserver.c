@@ -9,28 +9,13 @@
 #define TRUE 1
 #define NUM_WORKERS 3
 
-void* worker_function( void *tp )
-{
-	int fd;
-	thread_pool *parent_tp;
-
-	parent_tp = (thread_pool*) tp;
-
-	while (TRUE) {
-
-		fd = tp_dequeue_request(parent_tp);
-		printf("Hello from worker: there are %d items in the work queue\n!", fd);
-
-		sleep(5);
-	}
-}
+/* Prototypes */
+void* worker_function( void *tp );
 
 int main(int argc, char** argv)
 {
 	/* Local varialbes */
 	int i;
-
-	socklen_t length;
 
 	int err;
 	unsigned int port;
@@ -39,6 +24,7 @@ int main(int argc, char** argv)
 	int listen_fd;
 	struct sockaddr_in serv_addr;
 
+	/* Define thread pool */
 	thread_pool *t_pool;
 
 	/* User specified port? */
@@ -58,13 +44,17 @@ int main(int argc, char** argv)
 		port = 8080;
 	}
 
+	/* Intialize thread pool structure */
 	t_pool = tp_init(NUM_WORKERS);
 
+	/* Spawn NUM_WORKER threads to handle requests */
 	for ( i = 0; i < NUM_WORKERS; i++ ) {
-		if (tp_add_worker(t_pool, worker_function)) {
-			perror("Cannot create worker function");
-		}
+		if (!(tp_add_worker(t_pool, worker_function))) {
 
+			/* tp_add_worker returns 0 on error */
+			perror("Cannot create worker function");
+
+		}
 	}
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
