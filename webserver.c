@@ -88,7 +88,6 @@ int main(int argc, char** argv)
 				job->length);
 
 		tp_enqueue_request(t_pool, job);
-		fprintf(stderr, "DEBUG: Incoming request was accepted\n");
 	 	
 	 }
 
