@@ -1,16 +1,30 @@
-CFLAGS=-g -Wall -pedantic -lrt -lpthread
-CC=gcc
+TARGET=webserver
 
-THRD_POOL_OBJS=thread_pool.o tp_job_queue.o tp_worker_collection.o
-WEBSRV_OBJS=webserver.o worker.o
-OBJECTS=$(THRD_POOL_OBJS) $(WEBSRV_OBJS)
+CC=gcc
+CFLAGS=-g -Wall -pedantic -I.
+LINKER=gcc -o
+LFLAGS=-g -Wall -I. -lrt -lpthread
+
+SRCDIR=src
+OBJDIR=objs
+BINDIR=bin
+
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+INCLUDES := $(wildcard $(SRCDIR)/*.h)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 .PHONY: clean clobber
-%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
-webserver: $(OBJECTS)
-	$(CC) $(CFLAGS) -o webserver $(OBJECTS)
+
+$(BINDIR)/$(TARGET): $(OBJECTS)
+	@mkdir $(BINDIR)
+	$(LINKER) $@ $(LFLAGS) $(OBJECTS)
+
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
+	@mkdir	-p $(@D)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clobber: clean
-	/bin/rm -f webserver
+	/bin/rm -rf $(BINDIR)/$(TARGET)
+	/bin/rm -rf $(BINDIR)
 clean:
-	/bin/rm -f *.o
+	/bin/rm -rf $(OBJDIR)
