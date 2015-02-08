@@ -38,6 +38,7 @@ void* worker_function( void *tp )
 		read(job->sockfd, BUFFER, BUFFER_SIZE);
 
 		parse_request(BUFFER, &method, &uri);
+		fprintf(stderr, "Recieved %s request for %s\n", method, uri);
 
 		if ( !strcmp(method, "GET") ) {
 			
