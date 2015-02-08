@@ -16,7 +16,7 @@ OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 .PHONY: clean clobber
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
-	@mkdir $(BINDIR)
+	@mkdir -p $(BINDIR)
 	$(LINKER) $@ $(LFLAGS) $(OBJECTS)
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
@@ -24,7 +24,6 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clobber: clean
-	/bin/rm -rf $(BINDIR)/$(TARGET)
 	/bin/rm -rf $(BINDIR)
 clean:
 	/bin/rm -rf $(OBJDIR)
