@@ -57,36 +57,50 @@ int main(int argc, char** argv)
 		}
 	}
 
+	/* Create listening socket for incoming connecions */
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 
+	/* Define IPv4 info for incoming socket */
 	serv_addr.sin_family = AF_INET;
+
+	/* Bind to any address on machine */
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	
+	/* Use the configured port for listening */
 	serv_addr.sin_port = htons(port);
 
+	/* Attempt to bind the socket with specificed informaiton */
 	err = bind(listen_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
+	/* Bind failed ? */
 	if (err == -1) {
 		perror("bind");
 	}
 
+	/* Confirm read to take packets on given socket */
 	err = listen(listen_fd, 32);
 
+	/* Did listen fail? */
 	if (err == -1) {
 		perror("listen");
 	}
 
+	/* Alert user that webserver is now working */
 	printf("Webserver on port %d is listening for connections\n", port);
 
+	/* Try infinitely */
 	while (TRUE) {
 
 		/* Create new job */
 		tp_job *job;
 		job = tp_job_init();
 		
+		/* Wait for incoming connection */
 		job->sockfd = accept(listen_fd, 
 				job->client_addr,
 				job->length);
 
+		/* Add request to job queue */
 		tp_enqueue_request(t_pool, job);
 	 	
 	 }

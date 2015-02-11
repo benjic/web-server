@@ -17,3 +17,15 @@ invokes the compiled executable in this directory. You can pass a target port to
 the script which is then passed to the binary as well
 
 `./start.sh <port_number | 8080>`
+
+## Functions
+
+### Threading
+
+A simple struct and supporting functions are defined to construct and manage
+requests into a job queue as well as start and manage threads in a thread pool.
+
+* `tp_init() & tp_destroy() // Mange memory allocations/deallocations for struct`
+* `tp_wc_init() & tp_wc_destroy() // Manage memory for worker collection`
+* `tp_job_queue_init() & tp_job_queue_destroy() // Manage memrory for job queu`
+* 
