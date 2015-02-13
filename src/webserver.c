@@ -7,7 +7,7 @@
 #include "thread_pool.h"
 
 #define TRUE 1
-#define NUM_WORKERS 3
+#define NUM_WORKERS 2
 
 /* Prototypes */
 void* worker_function( void *tp );
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
 	} else {
 		/* Default bind port */
-		port = 8080;
+		port = 50001;
 	}
 
 	/* Intialize thread pool structure */
