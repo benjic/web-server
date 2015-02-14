@@ -55,10 +55,30 @@ void* worker_function( void *tp )
 		 * result
 		 */
 		parse_request(BUFFER, &method, &uri);
-		fprintf(stderr, "Recieved %s request for %s\n", method, uri);
+
+		/* Test to make sure parse request did not not return null pointers
+		 * resulting in malformed requests. If we get any type of request that
+		 * can't be parsed then the request is bad.
+		 */
+		if (!method || !uri) {
+
+			/* Return status code for a bad request from client as it is malformed */
+			write(job->sockfd, "HTTP/1.0 400 Bad Request\r\n", 36);
+
+			/* Cleanup */
+			close(fd);
+			close(job->sockfd);
+			tp_job_destroy(job);
+
+			/* Start a new iteration */
+			continue;
+		}
 
 		/* We only serve GET requests */
-		if ( !strcmp(method, "GET") ) {
+		if (!strcmp(method, "GET")) {
+
+			/* Alert daemon to incoming request */
+			fprintf(stderr, "Recieved %s request for %s\n", method, uri);
 			
 			/* Try to open the given uri. It is worth noting that I removed the first
 			 * character from the uri becuase it is given /dfasdf/asdfsd.htm and the
@@ -66,7 +86,6 @@ void* worker_function( void *tp )
 			 */
 			fd = open(uri+1, O_RDONLY);
 
-			/* If valid file fd will be greater than 0 */
 			if ( fd > 0 ) {
 
 				/* Write the first part of the response to the socket including the
@@ -158,6 +177,12 @@ void parse_request(char *buffer, char **method, char **uri)
 	/* Begin tokenizing the copy buffer with spaces */
 	token = strtok_r(copy_buffer, " ", &strtok_saveptr);
 
+	if (!token) {
+		*method = 0;
+		*uri = 0;
+		return;
+	}
+
 	/* The first char sequence in HTTP will be the method of the request. A new
 	 * bit of heap is made available for the method variable of size of the token
 	 * lenght and is then copied byte for byte with token.
@@ -168,6 +193,11 @@ void parse_request(char *buffer, char **method, char **uri)
 	/* Again token is updated */
 	token = strtok_r(NULL, " ", &strtok_saveptr);
 
+	if (!token) {
+		*method = 0;
+		*uri = 0;
+		return;
+	}
 
 	/* 
 	 * Memory is allocated for the uri and the value is coppied to this new space
