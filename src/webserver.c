@@ -75,6 +75,7 @@ int main(int argc, char** argv)
 	/* Bind failed ? */
 	if (err == -1) {
 		perror("bind");
+		exit(-1);
 	}
 
 	/* Confirm read to take packets on given socket */
@@ -83,6 +84,7 @@ int main(int argc, char** argv)
 	/* Did listen fail? */
 	if (err == -1) {
 		perror("listen");
+		exit(-1);
 	}
 
 	/* Alert user that webserver is now working */
